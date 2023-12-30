@@ -1,0 +1,7 @@
+.updateProfileContainer button {
+  background-color: transparent;
+  outline: none;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  border: 0.2rem solid blue;
+}
