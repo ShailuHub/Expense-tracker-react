@@ -4,6 +4,7 @@ import Products from "./pages/Products";
 import About from "./pages/About";
 import ProfileForm from "./components/Profile/ProfileForm";
 import NotFoundPage from "./pages/NotFoundPage";
+import ForgotPassword from "./pages/ForgotPassword";
 import { useContext } from "react";
 import { authContext } from "./store/auth-context";
 import { Navigate } from "react-router-dom";
@@ -29,6 +30,7 @@ const App = () => {
         path="/email-verification"
         element={userLoggedIn ? <VerifyEmail /> : <Navigate to="/login" />}
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/*" element={<NotFoundPage />} />
     </Routes>
   );
