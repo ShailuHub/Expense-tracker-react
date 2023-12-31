@@ -3,9 +3,15 @@ import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { authContext } from "../../store/auth-context";
 import "./Header.css";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const authCtx = useContext(authContext);
+  const navigate = useNavigate();
+  const logoutButtonHandler = () => {
+    authCtx.logout();
+    navigate("/login");
+  };
   return (
     <div className="container-fluid header-container bg-body-tertiary">
       <Navbar expand="lg">
@@ -29,6 +35,9 @@ const Header = () => {
                 <NavDropdown.Item as={Link} to="/profile">
                   Profile
                 </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/email-verification">
+                  Verify Email
+                </NavDropdown.Item>
                 {/* <NavDropdown.Item href="#action/3.2">
                   Another action
                 </NavDropdown.Item>
@@ -42,7 +51,7 @@ const Header = () => {
               </NavDropdown>
             </Nav>
             {authCtx.isLoggedIn && (
-              <Button className="btn" onClick={() => authCtx.logout()}>
+              <Button className="btn" onClick={logoutButtonHandler}>
                 Logout
               </Button>
             )}

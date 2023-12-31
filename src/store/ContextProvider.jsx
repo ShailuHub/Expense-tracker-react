@@ -4,8 +4,13 @@ import { authContext } from "./auth-context";
 export const AuthContextProvider = (props) => {
   const initialEmail = localStorage.getItem("email");
   const initialToken = localStorage.getItem("token");
+  const initialEmailVerification = localStorage.getItem("isVerified");
   const [email, setEmail] = useState(initialEmail);
   const [token, setToken] = useState(initialToken);
+  const [isEmailVerified, setEmailVerified] = useState(
+    initialEmailVerification
+  );
+  const [isProfileCompleted, setisProfileCompleted] = useState(false);
   const userLoggedIn = !!initialEmail;
 
   // create a logoutTimer Variable
@@ -36,6 +41,15 @@ export const AuthContextProvider = (props) => {
     resetLogoutTimer();
   };
 
+  const emailVerificationHandler = (verified) => {
+    localStorage.setItem("isVerified", verified);
+    setEmailVerified(verified);
+  };
+
+  const profileCompletedHandler = (isProfileCompleted) => {
+    setisProfileCompleted(isProfileCompleted);
+  };
+
   useEffect(() => {
     window.addEventListener("mouseover", autologoutHandler);
     window.addEventListener("keydown", autologoutHandler);
@@ -50,9 +64,13 @@ export const AuthContextProvider = (props) => {
     email: email,
     token: token,
     isLoggedIn: userLoggedIn,
+    isVerified: isEmailVerified,
+    isProfileCompleted: isProfileCompleted,
     login: loginHandler,
     logout: logoutHandler,
     autologout: autologoutHandler,
+    verifyEmail: emailVerificationHandler,
+    profileCompleted: profileCompletedHandler,
   };
   return (
     <authContext.Provider value={contextValue}>

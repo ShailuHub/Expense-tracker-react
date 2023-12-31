@@ -7,6 +7,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { useContext } from "react";
 import { authContext } from "./store/auth-context";
 import { Navigate } from "react-router-dom";
+import VerifyEmail from "./components/Profile/VerifyEmail";
 
 const App = () => {
   const authCtx = useContext(authContext);
@@ -20,8 +21,14 @@ const App = () => {
       />
       <Route path="/about" element={<About />} />
 
-      <Route path="/profile" element={<ProfileForm />} />
-
+      <Route
+        path="/profile"
+        element={userLoggedIn ? <ProfileForm /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/email-verification"
+        element={userLoggedIn ? <VerifyEmail /> : <Navigate to="/login" />}
+      />
       <Route path="/*" element={<NotFoundPage />} />
     </Routes>
   );

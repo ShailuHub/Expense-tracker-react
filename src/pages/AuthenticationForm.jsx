@@ -4,6 +4,7 @@ import Axios from "axios";
 import Layout from "../layout/Layout";
 import { useNavigate } from "react-router-dom";
 import { authContext } from "../store/auth-context";
+import VerifyEmail from "../components/Profile/VerifyEmail";
 
 const AuthenticationForm = () => {
   const emailInput = useRef();
@@ -56,13 +57,11 @@ const AuthenticationForm = () => {
           returnSecureToken: true,
         });
         authCtx.login(response.data.email, response.data.idToken);
-
         navigate("/products");
       } catch (error) {
         if (error && error.response && error.response.data) {
           alert(error.response.data.error.message);
         }
-
         console.log(error);
       }
     }
@@ -124,6 +123,60 @@ const AuthenticationForm = () => {
           </Button>
         </Form>
       </Container>
+      {/* {!isEmailVerified ? (
+        <Container className="d-flex justify-content-center align-items-center vh-100">
+          <Form style={{ width: "300px" }} onSubmit={authFormSubmitHandler}>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>Email address</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                ref={emailInput}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                ref={passwordInput}
+              />
+            </Form.Group>
+
+            {!login && (
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Label>Confirm Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Confirm password"
+                  ref={confirmPasswordInput}
+                />
+              </Form.Group>
+            )}
+            {loading && <p>Sending request...</p>}
+            {!login ? (
+              <Button variant="primary" type="submit" className="w-100">
+                signUp
+              </Button>
+            ) : (
+              <Button variant="primary" type="submit" className="w-100">
+                login
+              </Button>
+            )}
+            <Button
+              type="button"
+              className="w-100 mt-2 text-dark"
+              style={{ backgroundColor: "transparent" }}
+              onClick={authToggleButton}
+            >
+              {!login ? "Log in with existing email" : "Create new Account"}
+            </Button>
+          </Form>
+        </Container>
+      ) : (
+        <VerifyEmail onVerificationSuccess={() => setEmailVerified(true)} />
+      )} */}
     </Layout>
   );
 };

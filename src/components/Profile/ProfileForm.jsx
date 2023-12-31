@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Axios from "axios";
 import Layout from "../../layout/Layout";
 import { useNavigate } from "react-router-dom";
+import { authContext } from "../../store/auth-context";
 
-const ProfileForm = (props) => {
+const ProfileForm = () => {
+  const authCtx = useContext(authContext);
   const photoUrlInput = useRef();
   const firstNameInput = useRef();
   const lastNameInput = useRef();
@@ -12,15 +14,18 @@ const ProfileForm = (props) => {
     displayName: "",
     photoUrl: "",
   });
+  const [updated, setUpdated] = useState(false);
 
+  // Fetch user details when the component mounts
   useEffect(() => {
     getUserDetails();
   }, []);
 
+  // Handle profile form submission
   const profileFormHandler = async (event) => {
     event.preventDefault();
     const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM";
+      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=YOUR_API_KEY"; // Replace with your API key
     const displayName =
       firstNameInput.current.value + " " + lastNameInput.current.value;
     const photoUrl = photoUrlInput.current.value;
@@ -33,36 +38,64 @@ const ProfileForm = (props) => {
         photoUrl,
         returnSecureToken: true,
       });
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  const getUserDetails = async () => {
-    const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM";
-    const idToken = localStorage.getItem("token");
-
-    try {
-      const response = await Axios.post(url, {
-        idToken,
-      });
-      const { displayName, photoUrl } = response.data.users[0];
-      setProfileDetails({ displayName, photoUrl });
-
-      // Set input field values
-      if (firstNameInput.current) {
-        const splitDisplayName = displayName.split(" ");
-        firstNameInput.current.value = splitDisplayName[0] || "";
-        lastNameInput.current.value = splitDisplayName[1] || "";
-        photoUrlInput.current.value = photoUrl || "";
+      // Check if the request was successful
+      if (response.status === 200) {
+        // Set updated state to true and reset after 1000ms
+        setUpdated(true);
+        setTimeout(() => {
+          setUpdated(false);
+        }, 1000);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  // Fetch user details from the server
+  const getUserDetails = async () => {
+    const url =
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=YOUR_API_KEY"; // Replace with your API key
+    const idToken = localStorage.getItem("token");
+
+    try {
+      const response = await Axios.post(url, {
+        idToken,
+      });
+
+      // Destructure user details or set defaults
+      const { displayName, photoUrl } = response.data.users[0] || {
+        displayName: "",
+        photoUrl: "",
+      };
+
+      // Set profile details state
+      setProfileDetails({ displayName, photoUrl });
+
+      // Set input field values if they exist
+      if (firstNameInput.current) {
+        const splitDisplayName = displayName.split(" ");
+        firstNameInput.current.value = splitDisplayName[0] || "";
+        lastNameInput.current.value = splitDisplayName[1] || "";
+        photoUrlInput.current.value = photoUrl || "";
+      }
+
+      // Check if all required fields are filled and update context
+      if (
+        firstNameInput.current.value !== "" &&
+        lastNameInput.current.value !== "" &&
+        photoUrlInput.current.value !== ""
+      ) {
+        authCtx.profileCompleted(true);
+      } else {
+        authCtx.profileCompleted(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Handle cancel button click
   const cancelProfileFormHandler = () => {
     navigate("/products");
   };
@@ -70,6 +103,16 @@ const ProfileForm = (props) => {
   return (
     <>
       <Layout>
+        {updated && (
+          // Display a success alert if the profile is updated
+          <div
+            className="alert alert-primary container text-center mt-3"
+            style={{ width: "30rem" }}
+            role="alert"
+          >
+            Your Profile is updated.
+          </div>
+        )}
         <div className="container mt-5" style={{ width: "30rem" }}>
           <h3>Contact Details</h3>
           <form action="" onSubmit={profileFormHandler}>
