@@ -1,13 +1,16 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import EmailVerificationModals from "../../modals/EmailVerificationModals";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { authContext } from "../../store/auth-context";
+import { authAction } from "../../store/redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const VerifyEmail = () => {
-  const authCtx = useContext(authContext);
+  const isEmailVerified = useSelector((state) => state.auth.isEmailVerified);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const emailIsVerified = authCtx.isVerified;
+  const emailIsVerified = isEmailVerified;
 
   // Handler to cancel email verification
   const cancelVerifyEmailHandler = () => {
@@ -17,17 +20,19 @@ const VerifyEmail = () => {
   // Handler to initiate email verification
   const verifyEmailHandler = async () => {
     const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=YOUR_API_KEY"; // Replace with your API key
+      "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM"; // Replace with your API key
 
     try {
-      const idToken = localStorage.getItem("token");
-      const email = localStorage.getItem("email");
+      const user = JSON.parse(localStorage.getItem("user"));
+      const idToken = user.tokenId;
+      const email = user.email;
       const requestType = "VERIFY_EMAIL";
       const response = await Axios.post(url, {
         idToken,
         email,
         requestType,
       });
+      dispatch(authAction.emailVerification({ emailVerified: true }));
     } catch (error) {
       console.log(error);
     }
@@ -36,18 +41,17 @@ const VerifyEmail = () => {
   // Check if email is verified when the component mounts
   const checkIsEmailVerified = async () => {
     const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=YOUR_API_KEY"; // Replace with your API key
-    const idToken = localStorage.getItem("token");
-
+      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM"; // Replace with your API key
+    const user = JSON.parse(localStorage.getItem("user"));
+    const idToken = user.tokenId;
     try {
       const response = await Axios.post(url, {
         idToken,
         returnSecureToken: true,
       });
-
       // Get the email verification status and update the context
       const emailVerified = response.data.emailVerified;
-      authCtx.verifyEmail(emailVerified);
+      dispatch(authAction.emailVerification({ emailVerified: emailVerified }));
     } catch (error) {
       console.log(error);
     }
@@ -88,7 +92,7 @@ const VerifyEmail = () => {
             <button
               className="btn btn-primary"
               onClick={() => {
-                navigate("/products");
+                navigate("/home");
               }}
             >
               Go to dashboard

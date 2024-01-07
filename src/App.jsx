@@ -1,34 +1,32 @@
 import { Route, Routes } from "react-router-dom";
 import AuthenticationForm from "./pages/AuthenticationForm";
-import Products from "./pages/Products";
+import Home from "./pages/Home";
 import About from "./pages/About";
 import ProfileForm from "./components/Profile/ProfileForm";
 import NotFoundPage from "./pages/NotFoundPage";
 import ForgotPassword from "./pages/ForgotPassword";
-import { useContext } from "react";
-import { authContext } from "./store/auth-context";
 import { Navigate } from "react-router-dom";
 import VerifyEmail from "./components/Profile/VerifyEmail";
+import { useSelector } from "react-redux";
 
 const App = () => {
-  const authCtx = useContext(authContext);
-  const userLoggedIn = authCtx.isLoggedIn;
+  const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
   return (
     <Routes>
       <Route path="/login" element={<AuthenticationForm />} />
       <Route
-        path="/products"
-        element={userLoggedIn ? <Products /> : <Navigate to="/login" />}
+        path="/home"
+        element={isLoggedIn ? <Home /> : <Navigate to="/login" />}
       />
       <Route path="/about" element={<About />} />
 
       <Route
         path="/profile"
-        element={userLoggedIn ? <ProfileForm /> : <Navigate to="/login" />}
+        element={isLoggedIn ? <ProfileForm /> : <Navigate to="/login" />}
       />
       <Route
         path="/email-verification"
-        element={userLoggedIn ? <VerifyEmail /> : <Navigate to="/login" />}
+        element={isLoggedIn ? <VerifyEmail /> : <Navigate to="/login" />}
       />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/*" element={<NotFoundPage />} />

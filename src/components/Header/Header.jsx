@@ -1,15 +1,16 @@
-import { useContext } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { authContext } from "../../store/auth-context";
 import "./Header.css";
 import { useNavigate } from "react-router-dom";
+import { authAction } from "../../store/redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const Header = () => {
-  const authCtx = useContext(authContext);
+  const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const logoutButtonHandler = () => {
-    authCtx.logout();
+    dispatch(authAction.logout());
     navigate("/login");
   };
   return (
@@ -22,11 +23,8 @@ const Header = () => {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link as={Link} to="/login">
+              <Nav.Link as={Link} to="/home">
                 Home
-              </Nav.Link>
-              <Nav.Link as={Link} to="/products">
-                Products
               </Nav.Link>
               <Nav.Link as={Link} to="/about">
                 About Us
@@ -50,7 +48,7 @@ const Header = () => {
                 </NavDropdown.Item> */}
               </NavDropdown>
             </Nav>
-            {authCtx.isLoggedIn && (
+            {isLoggedIn && (
               <Button className="btn" onClick={logoutButtonHandler}>
                 Logout
               </Button>

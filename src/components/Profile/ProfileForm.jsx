@@ -1,19 +1,16 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Axios from "axios";
 import Layout from "../../layout/Layout";
 import { useNavigate } from "react-router-dom";
-import { authContext } from "../../store/auth-context";
+import { useDispatch } from "react-redux";
+import { profileAction } from "../../store/redux";
 
 const ProfileForm = () => {
-  const authCtx = useContext(authContext);
+  const dispatch = useDispatch();
   const photoUrlInput = useRef();
   const firstNameInput = useRef();
   const lastNameInput = useRef();
   const navigate = useNavigate();
-  const [profileDetails, setProfileDetails] = useState({
-    displayName: "",
-    photoUrl: "",
-  });
   const [updated, setUpdated] = useState(false);
 
   // Fetch user details when the component mounts
@@ -25,11 +22,11 @@ const ProfileForm = () => {
   const profileFormHandler = async (event) => {
     event.preventDefault();
     const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=YOUR_API_KEY"; // Replace with your API key
+      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM";
     const displayName =
       firstNameInput.current.value + " " + lastNameInput.current.value;
     const photoUrl = photoUrlInput.current.value;
-    const idToken = localStorage.getItem("token");
+    const idToken = JSON.parse(localStorage.getItem("user")).tokenId;
 
     try {
       const response = await Axios.post(url, {
@@ -47,6 +44,7 @@ const ProfileForm = () => {
           setUpdated(false);
         }, 1000);
       }
+      getUserDetails();
     } catch (error) {
       console.log(error);
     }
@@ -55,29 +53,27 @@ const ProfileForm = () => {
   // Fetch user details from the server
   const getUserDetails = async () => {
     const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=YOUR_API_KEY"; // Replace with your API key
-    const idToken = localStorage.getItem("token");
-
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM";
+    const idToken = JSON.parse(localStorage.getItem("user")).tokenId;
     try {
       const response = await Axios.post(url, {
         idToken,
       });
-
       // Destructure user details or set defaults
       const { displayName, photoUrl } = response.data.users[0] || {
         displayName: "",
         photoUrl: "",
       };
-
-      // Set profile details state
-      setProfileDetails({ displayName, photoUrl });
-
-      // Set input field values if they exist
-      if (firstNameInput.current) {
+      if (displayName !== "") {
         const splitDisplayName = displayName.split(" ");
+        const firstName = splitDisplayName[0] || "";
+        const lastName = splitDisplayName[1] || "";
         firstNameInput.current.value = splitDisplayName[0] || "";
         lastNameInput.current.value = splitDisplayName[1] || "";
         photoUrlInput.current.value = photoUrl || "";
+        dispatch(
+          profileAction.profileDetails({ firstName, lastName, photoUrl })
+        );
       }
 
       // Check if all required fields are filled and update context
@@ -86,9 +82,19 @@ const ProfileForm = () => {
         lastNameInput.current.value !== "" &&
         photoUrlInput.current.value !== ""
       ) {
-        authCtx.profileCompleted(true);
+        dispatch(
+          profileAction.checkForProfileComplete({
+            isProfileCompleted: true,
+            displayName: firstNameInput.current.value || "Saver",
+          })
+        );
       } else {
-        authCtx.profileCompleted(false);
+        dispatch(
+          profileAction.checkForProfileComplete({
+            isProfileCompleted: false,
+            displayName: firstNameInput.current.value || "Saver",
+          })
+        );
       }
     } catch (error) {
       console.log(error);

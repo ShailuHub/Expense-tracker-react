@@ -1,0 +1,80 @@
+/* ExpenseCard.css */
+
+.expense-card-container {
+  border: 0.2rem solid #007bff;
+  border-radius: 1rem;
+  width: 15rem;
+  padding: 1rem;
+  background-color: #fff; /* Add a white background */
+  box-shadow: 0 0.2rem 0.5rem rgba(255, 255, 255, 0.2); /* Add a subtle box shadow */
+  transition: transform 0.2s ease-in-out; /* Add a smooth transition effect */
+  margin-bottom: 2rem;
+}
+
+.expense-card-container:hover {
+  transform: scale(1.05); /* Scale up on hover for a subtle zoom effect */
+}
+
+.header-container {
+  margin-bottom: 0.5rem;
+}
+
+.date-text {
+  color: #007bff;
+}
+
+.category-text {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-text {
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+
+.description-text {
+  color: #777;
+  margin-bottom: 0.5rem;
+}
+
+.cancel-btn {
+  background-color: #ff5304;
+}
+
+.button-container button {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-container button:hover {
+  background-color: #0056b3;
+}
+
+.edit-btn,
+.cancel-btn {
+  margin-right: 0.2rem;
+}
+
+.button-container .edit-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: 2px solid #007bff;
+}
+
+.button-container .cancel-btn:hover {
+  background-color: rgb(139, 40, 40);
+  color: #fff;
+}
+
+.button-container .cancel-btn {
+  background-color: red;
+  color: #fff;
+}
+.button-container .delete-btn {
+  margin-left: 0.2rem;
+  background-color: #007bff;
+  color: #fff;
+  border: 2px solid #007bff;
+}

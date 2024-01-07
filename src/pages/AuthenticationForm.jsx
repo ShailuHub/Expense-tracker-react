@@ -1,32 +1,31 @@
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Container, Form, Button } from "react-bootstrap";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { authContext } from "../store/auth-context";
-import VerifyEmail from "../components/Profile/VerifyEmail";
 import Layout from "../layout/Layout";
+import { useDispatch, useSelector } from "react-redux";
+import { authAction } from "../store/redux";
 
 const AuthenticationForm = () => {
+  const toggleForLogin = useSelector((state) => state.auth.toggleLoginToSignUp);
+  const dispatch = useDispatch();
   const emailInput = useRef();
   const passwordInput = useRef();
   const confirmPasswordInput = useRef();
-  const [login, setlogIn] = useState(true);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const authCtx = useContext(authContext);
-
+  const [loading, setLoading] = useState(false);
   const authFormSubmitHandler = async (event) => {
     event.preventDefault();
     setLoading(true);
 
     let url;
-    if (!login) {
+    if (!toggleForLogin) {
       url = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM`;
     } else {
       url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM`;
     }
 
-    if (!login) {
+    if (!toggleForLogin) {
       const email = emailInput.current.value;
       const password = passwordInput.current.value;
       const confirmPassword = confirmPasswordInput.current.value;
@@ -38,9 +37,14 @@ const AuthenticationForm = () => {
             password,
             returnSecureToken: true,
           });
-
-          authCtx.login(response.data.email, response.data.idToken);
-          navigate("/products");
+          dispatch(
+            authAction.login({
+              email: response.data.email,
+              tokenId: response.data.idToken,
+              uid: response.data.localId,
+            })
+          );
+          navigate("/home");
         } catch (error) {
           if (error && error.response && error.response.data) {
             alert(error.response.data.error.message);
@@ -52,7 +56,7 @@ const AuthenticationForm = () => {
         alert("Password and confirm password don't match");
         navigate("/login");
       }
-    } else if (login) {
+    } else if (toggleForLogin) {
       const email = emailInput.current.value;
       const password = passwordInput.current.value;
 
@@ -62,8 +66,13 @@ const AuthenticationForm = () => {
           password,
           returnSecureToken: true,
         });
-
-        authCtx.login(response.data.email, response.data.idToken);
+        dispatch(
+          authAction.login({
+            email: response.data.email,
+            tokenId: response.data.idToken,
+            uid: response.data.localId,
+          })
+        );
         navigate("/products");
       } catch (error) {
         if (error && error.response && error.response.data) {
@@ -77,7 +86,7 @@ const AuthenticationForm = () => {
   };
 
   const authToggleButton = () => {
-    setlogIn((previousState) => !previousState);
+    dispatch(authAction.toggle());
   };
 
   return (
@@ -105,7 +114,7 @@ const AuthenticationForm = () => {
             />
           </Form.Group>
 
-          {!login && (
+          {!toggleForLogin && (
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Label>Confirm Password</Form.Label>
               <Form.Control
@@ -116,7 +125,7 @@ const AuthenticationForm = () => {
             </Form.Group>
           )}
           {loading && <p>Sending request...</p>}
-          {!login ? (
+          {!toggleForLogin ? (
             <Button
               variant="primary"
               type="submit"
@@ -141,7 +150,9 @@ const AuthenticationForm = () => {
             style={{ backgroundColor: "transparent" }}
             onClick={authToggleButton}
           >
-            {!login ? "Log in with existing email" : "Create new Account"}
+            {!toggleForLogin
+              ? "Log in with existing email"
+              : "Create new Account"}
           </Button>
           <Button
             type="button"
