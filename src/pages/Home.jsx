@@ -1,5 +1,5 @@
 import Layout from "../layout/Layout";
-import { Container } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
 import classes from "./Products.module.css";
 import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -12,11 +12,12 @@ const Home = () => {
   const dispatch = useDispatch();
   const expenses = useSelector((state) => state.expense.expenses);
   const totalExpense = useSelector((state) => state.expense.totalExpense);
-  // const editingMode = useSelector((state) => state.enableEditingMode);
   const displayName = useSelector((state) => state.profile.displayName);
+  const darkMode = useSelector((state) => state.expense.darkMode);
   const isProfileCompleted = useSelector(
     (state) => state.profile.isProfileCompleted
   );
+  const premiumFeatures = useSelector((state) => state.expense.premiumFeatures);
   const [profileForm, setProfileForm] = useState(true);
   const [toggleAddExpense, setToggleAddExpense] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
@@ -53,6 +54,26 @@ const Home = () => {
     }
   };
 
+  useEffect(() => {
+    const saveUserDetail = async () => {
+      const url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM";
+      const user = JSON.parse(localStorage.getItem("user"));
+      const idToken = user.tokenId;
+      try {
+        const response = await Axios.post(url, {
+          idToken,
+          returnSecureToken: true,
+        });
+        const { displayName, emailVerified, photoUrl } = response.data.users[0];
+        const modifiedUser = { ...user, displayName, emailVerified, photoUrl };
+        localStorage.setItem("user", JSON.stringify(modifiedUser));
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    saveUserDetail();
+  }, []);
   useEffect(() => {
     getExpenseDetails();
   }, []);
@@ -126,13 +147,43 @@ const Home = () => {
   };
 
   const handleOnDeleteClick = async (expenseId) => {
-    const url = `https://expense-tracker-4e541-default-rtdb.firebaseio.com/expense/${expenseId}.json`;
+    const uid = JSON.parse(localStorage.getItem("user")).uid;
+    const url = `https://expense-tracker-4e541-default-rtdb.firebaseio.com/users/${uid}/expense/${expenseId}.json`;
     try {
       await Axios.delete(url);
       dispatch(expenseAction.deleteExpense({ id: expenseId }));
     } catch (error) {
       console.log(error);
     }
+  };
+  let downloadUrl = "";
+  const handleDownload = async () => {
+    //Heading for csv data table
+    const csvHeader = "Date,Item,Category,Amount\n";
+
+    //Converting expenses to CSV format
+    const toCSV = expenses
+      .map((expense) => {
+        const { date, item, category, amount } = expense;
+        return `${date.substring(0, 10)},${item},${category},${amount}`;
+      })
+      .join("\n");
+    const blobData = new Blob([csvHeader, toCSV], { type: "csv/text" });
+    downloadUrl = URL.createObjectURL(blobData);
+
+    //Create a temporary download anchor tag
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "expenses.csv";
+    document.body.appendChild(downloadLink);
+
+    // Trigger the download and remove the temporary downloadLink element
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
+  const handleDarkTheme = () => {
+    dispatch(expenseAction.toggleDarkthem());
   };
 
   return (
@@ -142,7 +193,7 @@ const Home = () => {
       ) : (
         <Container>
           <div
-            className={`${classes.updateProfileContainer} container d-sm-flex flex-row justify-content-between mt-3`}
+            className={`${classes.updateProfileContainer} container d-md-flex flex-row justify-content-between mt-3`}
           >
             <h4 className="d-flex justify-content-center align-items-center text-md">
               Welcome{" "}
@@ -156,11 +207,14 @@ const Home = () => {
                 Rs. {totalExpense}
               </span>
             </h4>
+
             {!isProfileCompleted ? (
-              <button onClick={profileFormShowHandler}>
-                Your profile is incomplete.{" "}
-                <span className="text-primary">Complete it now</span>
-              </button>
+              <div>
+                <button onClick={profileFormShowHandler}>
+                  Your profile is incomplete.{" "}
+                  <span className="text-primary">Complete it now</span>
+                </button>
+              </div>
             ) : null}
           </div>
         </Container>
@@ -250,7 +304,32 @@ const Home = () => {
           )}
         </div>
       </form>
-      <div className="container mt-5 d-flex flex-wrap flex-md-wrap justify-content-center gap-3">
+      {premiumFeatures && (
+        <div className="container mt-2 d-flex justify-content-center gap-3">
+          {darkMode ? (
+            <Button onClick={handleDarkTheme}>Turn off dark theme</Button>
+          ) : (
+            <Button onClick={handleDarkTheme}>Turn on dark theme</Button>
+          )}
+          <Button onClick={handleDownload}>Download</Button>
+        </div>
+      )}
+      {/* {turnOffDarkTheme
+        ? premiumFeatures && (
+            <div className="container mt-2 d-flex justify-content-center gap-3">
+              <Button onClick={handleDarkTheme}>Turn off dark theme</Button>
+              <Button onClick={handleDownload}>Download</Button>
+            </div>
+          )
+        : premiumFeatures && (
+            <div className="container mt-2 d-flex justify-content-center gap-3">
+              <Button onClick={handleDarkTheme}>Turn on dark theme</Button>
+              <Button onClick={handleDownload}>Download</Button>
+            </div>
+          )}
+      {} */}
+
+      <div className="container mt-2 d-flex flex-wrap flex-md-wrap justify-content-center gap-3">
         {expenses.map((item, idx) => {
           return (
             <ExpenseCard

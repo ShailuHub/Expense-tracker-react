@@ -15,6 +15,10 @@ const App = () => {
     <Routes>
       <Route path="/login" element={<AuthenticationForm />} />
       <Route
+        path="/"
+        element={isLoggedIn ? <Home /> : <Navigate to="/login" />}
+      />
+      <Route
         path="/home"
         element={isLoggedIn ? <Home /> : <Navigate to="/login" />}
       />

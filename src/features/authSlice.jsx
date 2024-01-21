@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const user = JSON.parse(localStorage.getItem("user"));
-const isEmailVerified = localStorage.getItem("isVerified");
+const isEmailVerified = user ? user.emailVerified : "";
 
 const initialAuthState = {
   isAuthenticated: !!user,
@@ -27,8 +27,7 @@ const authSlice = createSlice({
       state.toggleLoginToSignUp = !state.toggleLoginToSignUp;
     },
     emailVerification(state, action) {
-      localStorage.setItem("isVerified", action.payload.emailVerified);
-      state.isEmailVerified = true;
+      state.isEmailVerified = action.emailVerified;
     },
   },
 });

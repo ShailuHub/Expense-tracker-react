@@ -2,12 +2,13 @@ import { useEffect } from "react";
 import EmailVerificationModals from "../../modals/EmailVerificationModals";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { authContext } from "../../store/auth-context";
 import { authAction } from "../../store/redux";
 import { useDispatch, useSelector } from "react-redux";
 
+//
 const VerifyEmail = () => {
   const isEmailVerified = useSelector((state) => state.auth.isEmailVerified);
+  console.log(isEmailVerified);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const emailIsVerified = isEmailVerified;
@@ -38,28 +39,12 @@ const VerifyEmail = () => {
     }
   };
 
-  // Check if email is verified when the component mounts
-  const checkIsEmailVerified = async () => {
-    const url =
-      "https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDnQXjr5tNZXPbL9WtgBFFTTu-kuqq2jGM"; // Replace with your API key
-    const user = JSON.parse(localStorage.getItem("user"));
-    const idToken = user.tokenId;
-    try {
-      const response = await Axios.post(url, {
-        idToken,
-        returnSecureToken: true,
-      });
-      // Get the email verification status and update the context
-      const emailVerified = response.data.emailVerified;
-      dispatch(authAction.emailVerification({ emailVerified: emailVerified }));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   // Use useEffect to run the email verification check when the component mounts
   useEffect(() => {
-    checkIsEmailVerified();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const emailVerified = !!user.emailVerified;
+    console.log(emailVerified);
+    dispatch(authAction.emailVerification({ emailVerified: emailVerified }));
   }, []);
 
   return (

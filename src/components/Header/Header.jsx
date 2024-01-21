@@ -36,16 +36,6 @@ const Header = () => {
                 <NavDropdown.Item as={Link} to="/email-verification">
                   Verify Email
                 </NavDropdown.Item>
-                {/* <NavDropdown.Item href="#action/3.2">
-                  Another action
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#action/3.3">
-                  Something
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action/3.4">
-                  Separated link
-                </NavDropdown.Item> */}
               </NavDropdown>
             </Nav>
             {isLoggedIn && (
